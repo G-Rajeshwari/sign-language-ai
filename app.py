@@ -3,65 +3,63 @@ import mediapipe as mp
 import pickle
 import cv2
 import numpy as np
-from PIL import Image
+import os
+
+st.set_page_config(page_title="Hand Gesture Recognition", page_icon="🤟")
+st.title("🤟 Hand Gesture Recognition")
+st.write("Upload an image of an ASL hand sign and the AI will recognize it!")
 
 # Load model
-model = pickle.load(open('model.pkl', 'rb'))
-mp_hands = mp.solutions.hands
-mp_draw = mp.solutions.drawing_utils
-hands = mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.7)
+model_path = os.path.join(os.path.dirname(__file__), 'model.pkl')
+model = pickle.load(open(model_path, 'rb'))
 
-st.title("🤟 Sign Language to Text AI")
-st.write("Show an ASL hand sign to your webcam and the AI will recognize it!")
+# New mediapipe API (works on all versions)
+BaseOptions = mp.tasks.BaseOptions
+HandLandmarker = mp.tasks.vision.HandLandmarker
+HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
+VisionRunningMode = mp.tasks.vision.RunningMode
 
-sentence = st.session_state.get("sentence", "")
+# Download hand landmarker model
+import urllib.request
+model_url = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
+task_path = "/tmp/hand_landmarker.task"
+if not os.path.exists(task_path):
+    with st.spinner("Downloading hand detection model..."):
+        urllib.request.urlretrieve(model_url, task_path)
 
-run = st.checkbox("Start Webcam")
-FRAME_WINDOW = st.image([])
-text_display = st.empty()
+options = HandLandmarkerOptions(
+    base_options=BaseOptions(model_asset_path=task_path),
+    running_mode=VisionRunningMode.IMAGE,
+    num_hands=1
+)
 
-cap = cv2.VideoCapture(0)
+st.markdown("---")
+st.subheader("📸 Upload a Hand Sign Image")
+uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
-prev_char = ""
-hold_count = 0
+if uploaded_file is not None:
+    file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+    img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-while run:
-    ret, frame = cap.read()
-    if not ret:
-        break
+    st.image(img_rgb, caption="Uploaded Image", use_column_width=True)
 
-    frame = cv2.flip(frame, 1)
-    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    results = hands.process(rgb)
+    with HandLandmarker.create_from_options(options) as landmarker:
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img_rgb)
+        result = landmarker.detect(mp_image)
 
-    if results.multi_hand_landmarks:
-        lm = results.multi_hand_landmarks[0]
-        mp_draw.draw_landmarks(frame, lm, mp_hands.HAND_CONNECTIONS)
+    if result.hand_landmarks:
+        lm = result.hand_landmarks[0]
+        coords = [v for p in lm for v in (p.x, p.y)]
 
-        coords = [v for p in lm.landmark for v in (p.x, p.y)]
-        pred = model.predict([coords])[0]
-
-        if pred == prev_char:
-            hold_count += 1
+        if len(coords) == 42:
+            pred = model.predict([coords])[0]
+            st.success(f"### ✅ Detected Sign: `{pred}`")
+            st.balloons()
         else:
-            hold_count = 0
-            prev_char = pred
+            st.warning("Could not extract enough landmarks. Try a clearer image.")
+    else:
+        st.warning("No hand detected in the image. Please upload a clear hand sign photo.")
 
-        if hold_count == 10:
-            sentence += pred + " "
-            st.session_state["sentence"] = sentence
-            hold_count = 0
-
-        cv2.putText(frame, f'Sign: {pred}', (10, 50),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
-
-    cv2.putText(frame, sentence[-40:], (10, frame.shape[0] - 20),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-
-    FRAME_WINDOW.image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-    text_display.markdown(f"### 📝 Sentence: `{sentence}`")
-
-cap.release()
-
-if st.button("🗑️ Clear Sentence"):
-    st.session_state["sentence"] = ""
+st.markdown("---")
+st.caption("Built with MediaPipe + Random Forest | ASL Alphabet Recognition")
