@@ -20,7 +20,7 @@ A real-time ASL (American Sign Language) hand gesture recognition system built w
 
 ## 🗂️ Project Structure
 
-
+```
 sign_language_ai/
 ├── app.py                     # Streamlit web app (live webcam detection)
 ├── 2_extract_landmarks.py     # Extract MediaPipe landmarks from dataset
@@ -33,7 +33,7 @@ sign_language_ai/
 ├── runtime.txt                # Python version (3.11)
 ├── .python-version            # Python version pin
 └── .gitignore
-
+```
 ## ⚙️ Tech Stack
 | Tool | Purpose |
 |------|---------|
