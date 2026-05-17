@@ -3,9 +3,9 @@
 A real-time ASL (American Sign Language) hand gesture recognition system built with MediaPipe, Random Forest, and Streamlit.
 
 ## 🌐 Live Demo
-👉 [handgesturerecognition.streamlit.app](https://handgesturerecognition.streamlit.app)
+ [handgesturerecognition.streamlit.app](https://handgesturerecognition.streamlit.app)
 
-## 📸 What it does
+##  What it does
 - Opens your webcam in the browser
 - Detects your hand in real-time using MediaPipe
 - Draws skeleton joints and connections on your hand
