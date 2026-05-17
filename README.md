@@ -19,17 +19,19 @@ A real-time ASL (American Sign Language) hand gesture recognition system built w
 4. Result is overlaid on the live webcam feed via **Streamlit WebRTC**
 
 ## 🗂️ Project Structure
+
+
 sign_language_ai/
-├── app.py                    # Streamlit web app (live webcam detection)
-├── 2_extract_landmarks.py    # Extract MediaPipe landmarks from dataset
-├── 3_train_model.py          # Train Random Forest classifier
-├── 5_retrain_pixel_model.py  # Alternative pixel-based model
-├── 6_small_model.py          # Lightweight model for fast loading
-├── model.pkl                 # Trained classifier (98.9% accuracy)
-├── requirements.txt          # Python dependencies
-├── packages.txt              # System dependencies
-├── runtime.txt               # Python version (3.11)
-├── .python-version           # Python version pin
+├── app.py                     # Streamlit web app (live webcam detection)
+├── 2_extract_landmarks.py     # Extract MediaPipe landmarks from dataset
+├── 3_train_model.py           # Train Random Forest classifier
+├── 5_retrain_pixel_model.py   # Alternative pixel-based model
+├── 6_small_model.py           # Lightweight model for fast loading
+├── model.pkl                  # Trained classifier (98.9% accuracy)
+├── requirements.txt           # Python dependencies
+├── packages.txt               # System dependencies
+├── runtime.txt                # Python version (3.11)
+├── .python-version            # Python version pin
 └── .gitignore
 
 ## ⚙️ Tech Stack
